@@ -1,4 +1,4 @@
-# 📥 JMS YouTube Downloader (V2)
+# 📥 JMS YouTube Downloader
 
 A fast, lightweight, and modern desktop application for downloading YouTube videos. Built with **Tauri 2.0**, **Rust**, and **Vanilla JavaScript** for maximum performance and a tiny footprint.
 
