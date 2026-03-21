@@ -1,0 +1,116 @@
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #f6f6f6;
+  background-color: #1a1a1a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 1. GLOBAL RESET: This removes the scrollbar and fixes the height */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* No scrolling allowed */
+  background-color: #1a1a1a;
+}
+
+/* 2. CONTAINER: Perfect fit within the window */
+.container {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100vw;
+  height: 100vh; /* Fixed height, no longer min-height */
+  padding: 2rem;
+  box-sizing: border-box; /* This ensures padding doesn't cause overflow */
+}
+
+/* 3. HEADING: Fixed clipping by adding line-height and padding */
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.3; /* Give the gradient height room */
+  padding-bottom: 0.2em; /* Extra space for letter tails (descenders) */
+  background: linear-gradient(to right, #00d2ff, #3a7bd5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: #a1a1a1;
+  margin-bottom: 2rem;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 500px;
+  gap: 10px;
+}
+
+input {
+  flex-grow: 1;
+  border-radius: 12px;
+  padding: 0.8em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #2a2a2a;
+  border: 2px solid transparent;
+  color: white;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  outline: none;
+}
+
+input:focus {
+  border-color: #3a7bd5;
+  box-shadow: 0 0 10px rgba(58, 123, 213, 0.3);
+}
+
+button {
+  border-radius: 12px;
+  border: none;
+  padding: 0.8em 1.5em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  background-color: #3a7bd5;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.25s;
+}
+
+button:hover {
+  background-color: #2e62ab;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+}
+
+#status-msg {
+  margin-top: 1.5rem;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 8px;
+  min-height: 1.5em; /* Prevents layout jump when text appears */
+}
