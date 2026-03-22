@@ -19,7 +19,8 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden; /* No scrolling allowed */
+  overflow-y: auto; /* Allow scrolling on tiny screens */
+  overflow-x: hidden;
   background-color: #1a1a1a;
 }
 
@@ -32,7 +33,8 @@ html, body {
   align-items: center;
   text-align: center;
   width: 100vw;
-  height: 100vh; /* Fixed height, no longer min-height */
+  min-height: 100vh; /* Allows growing if content pushes limits */
+  height: auto; 
   padding: 2rem;
   box-sizing: border-box; /* This ensures padding doesn't cause overflow */
 }
@@ -125,6 +127,51 @@ button:active {
   background-color: #3f3f46; /* Slightly lighter gray on hover */
 }
 
+/* Styling for the absolute header and new instance button */
+.header-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 5px;
+  box-sizing: border-box;
+  z-index: 10;
+  background-color: transparent;
+}
+
+.drag-region {
+  flex-grow: 1;
+  height: 100%;
+}
+
+.titlebar-btn {
+  background-color: transparent;
+  color: #a1a1a1;
+  width: 36px;
+  height: 36px;
+  min-width: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-left: 2px;
+}
+
+.titlebar-btn:hover {
+  background-color: #3f3f46;
+  color: #00d2ff;
+}
+
+#close-btn:hover {
+  background-color: #ff4d4d;
+  color: white;
+}
+
 #reset-btn {
   background-color: #2a2a2a;
   color: #a1a1a1; /* Muted gray default */
@@ -204,4 +251,15 @@ button:disabled {
 
 #open-folder-btn:hover {
   background-color: #3f3f46;
+}
+
+/* Media query for screens smaller than 500px to ensure responsiveness */
+@media (max-width: 500px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+  input, button {
+    font-size: 0.9em;
+    padding: 0.7em 1em;
+  }
 }

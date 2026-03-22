@@ -66,13 +66,22 @@ fn open_folder(path: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to open folder: {}", e))
 }
 
+#[tauri::command]
+fn open_new_instance() -> Result<(), String> {
+    let exe = std::env::current_exe().map_err(|e| format!("Failed to get executable path: {}", e))?;
+    std::process::Command::new(exe)
+        .spawn()
+        .map_err(|e| format!("Failed to open new instance: {}", e))?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         // Both plugins initialized here
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![download_video, open_folder])
+        .invoke_handler(tauri::generate_handler![download_video, open_folder, open_new_instance])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

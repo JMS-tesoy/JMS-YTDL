@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "jms-dev",
+  "productName": "JMS-DEV",
   "version": "0.1.0",
   "identifier": "com.jms.ytdownloader",
   "build": {
@@ -12,7 +12,8 @@
       {
         "title": "jms-dev",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "decorations": false
       }
     ],
     "security": {

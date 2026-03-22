@@ -1,6 +1,7 @@
 const { invoke, Channel } = window.__TAURI__.core;
 const { open } = window.__TAURI__.dialog; // The folder picker logic
 const { downloadDir } = window.__TAURI__.path; // API to get the system's default Downloads folder
+const { getCurrentWindow } = window.__TAURI__.window; // API to control the window
 
 let selectedPath = "";
 
@@ -97,3 +98,36 @@ document.querySelector("#open-folder-btn").onclick = async () => {
     console.error("Could not open folder:", err);
   }
 };
+
+async function openNewInstance() {
+  try {
+    await invoke("open_new_instance");
+  } catch (err) {
+    console.error("Could not open new instance:", err);
+  }
+}
+
+document.querySelector("#new-instance-btn").onclick = openNewInstance;
+
+document.querySelector("#close-btn").onclick = async () => {
+  await getCurrentWindow().close();
+};
+
+// Explicitly tell the window to drag when the drag region is clicked
+document.querySelector(".header-bar").addEventListener("mousedown", async (e) => {
+  // Only drag if left-clicking (buttons === 1) on a designated drag area (not the close buttons)
+  if (e.buttons === 1 && e.target.hasAttribute("data-tauri-drag-region")) {
+    await getCurrentWindow().startDragging();
+  }
+});
+
+// Global event listener for Shift+Click
+window.addEventListener("click", (e) => {
+  // Ignore if clicking inside a text input (so users can still use Shift+Click to highlight text)
+  if (e.shiftKey && e.target.tagName !== "INPUT") {
+    // Prevent normal UI actions (like trying to download) when shift clicking
+    e.preventDefault();
+    e.stopPropagation(); 
+    openNewInstance();
+  }
+}, { capture: true }); // Capture phase ensures we intercept the click before buttons process it
