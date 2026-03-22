@@ -57,6 +57,7 @@ p {
 .row {
   display: flex;
   justify-content: center;
+  margin-bottom: 0.8rem;
   width: 100%;
   max-width: 500px;
   gap: 10px;
@@ -81,6 +82,14 @@ input:focus {
   box-shadow: 0 0 10px rgba(58, 123, 213, 0.3);
 }
 
+/* Styling for the new read-only path display */
+#path-display {
+  background-color: #222;
+  color: #a1a1a1;
+  cursor: default;
+  font-size: 0.9em;
+}
+
 button {
   border-radius: 12px;
   border: none;
@@ -88,18 +97,51 @@ button {
   font-size: 1em;
   font-weight: 600;
   font-family: inherit;
-  background-color: #3a7bd5;
+  background-color: #2563eb; /* Professional sleek blue */
   color: white;
   cursor: pointer;
   transition: transform 0.1s, background-color 0.25s;
 }
 
 button:hover {
-  background-color: #2e62ab;
+  background-color: #1d4ed8; /* Darker blue on hover */
 }
 
 button:active {
   transform: scale(0.95);
+}
+
+#folder-btn {
+  background-color: #2a2a2a; /* Match the dark input background */
+  color: #00d2ff; /* Bright professional accent color for the SVG icon */
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.2em;
+}
+
+#folder-btn:hover {
+  background-color: #3f3f46; /* Slightly lighter gray on hover */
+}
+
+#reset-btn {
+  background-color: #2a2a2a;
+  color: #a1a1a1; /* Muted gray default */
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.2em;
+}
+
+#reset-btn:hover {
+  background-color: #3f3f46;
+  color: #ff4d4d; /* Bright red to indicate a reset/clear action */
+}
+
+#download-btn {
+  width: 100%;
 }
 
 button:disabled {
@@ -107,10 +149,59 @@ button:disabled {
   cursor: not-allowed;
 }
 
-#status-msg {
+/* The new Progress Bar UI */
+.progress-container {
+  width: 100%;
+  max-width: 500px;
+  height: 8px;
+  background-color: #2a2a2a;
+  border-radius: 4px;
   margin-top: 1.5rem;
+  overflow: hidden;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0%; /* Starts empty */
+  background: linear-gradient(to right, #00d2ff, #3a7bd5);
+  transition: width 0.4s ease;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 1rem;
+  min-height: 1.5em; /* Prevents layout jump when text appears */
+}
+
+#status-msg {
+  margin: 0; /* Removes default paragraph margins for perfect vertical alignment */
   font-weight: 500;
   padding: 10px;
   border-radius: 8px;
-  min-height: 1.5em; /* Prevents layout jump when text appears */
+}
+
+#progress-text {
+  color: #00d2ff;
+  font-weight: 600;
+  min-width: 45px; /* Prevents layout shifting as digits change (e.g. 9% to 100%) */
+  text-align: right;
+  display: none; /* Hidden by default until download starts */
+}
+
+#open-folder-btn {
+  background-color: #2a2a2a;
+  color: #00d2ff;
+  width: 40px;
+  height: 40px; /* Force it to be a perfect square */
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  display: none; /* Hidden until download finishes */
+}
+
+#open-folder-btn:hover {
+  background-color: #3f3f46;
 }
