@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "JMS-DEV",
+  "productName": "JMS YouTube Downloader",
   "version": "0.1.0",
   "identifier": "com.jms.ytdownloader",
   "build": {
@@ -10,10 +10,14 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "jms-dev",
+        "title": "JMS YouTube Downloader",
         "width": 800,
         "height": 600,
-        "decorations": false
+        "minWidth": 500,
+        "minHeight": 500,
+        "theme": "Dark",
+        "decorations": false,
+        "visible": false
       }
     ],
     "security": {

@@ -19,8 +19,7 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow-y: auto; /* Allow scrolling on tiny screens */
-  overflow-x: hidden;
+  overflow: hidden; /* Prevents scrollbars from appearing during window resize */
   background-color: #1a1a1a;
 }
 
@@ -65,7 +64,8 @@ p {
   gap: 10px;
 }
 
-input {
+input,
+select {
   flex-grow: 1;
   border-radius: 12px;
   padding: 0.8em 1.2em;
@@ -74,7 +74,7 @@ input {
   font-family: inherit;
   background-color: #2a2a2a;
   border: 2px solid transparent;
-  color: white;
+  color: #f6f6f6; /* Aligned with global root font color */
   transition: border-color 0.25s, box-shadow 0.25s;
   outline: none;
 }
@@ -82,6 +82,37 @@ input {
 input:focus {
   border-color: #3a7bd5;
   box-shadow: 0 0 10px rgba(58, 123, 213, 0.3);
+}
+
+/* Custom hover and focus states exclusively for the Quality Dropdown */
+select {
+  cursor: pointer;
+  appearance: none; /* Removes default OS styling */
+  /* Updated stroke color to match the primary cyan blue */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2300d2ff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+  color: #a1a1a1; /* Match muted input design */
+  font-size: 0.9em; /* Align with path-display size */
+}
+
+select:hover {
+  background-color: #333;
+}
+
+select:focus {
+  border-color: #00d2ff;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.35);
+  background-color: #2a2a2a;
+}
+
+select option {
+  background-color: #2a2a2a;
+  color: #a1a1a1;
+  font-size: 0.9em;
+  font-family: inherit; /* Forces OS dropdowns to use your app's sleek font */
 }
 
 /* Styling for the new read-only path display */
@@ -99,14 +130,14 @@ button {
   font-size: 1em;
   font-weight: 600;
   font-family: inherit;
-  background-color: #2563eb; /* Professional sleek blue */
-  color: white;
+  background-color: #2b5a9b; /* Muted, professional slate blue */
+  color: #f6f6f6;
   cursor: pointer;
   transition: transform 0.1s, background-color 0.25s;
 }
 
 button:hover {
-  background-color: #1d4ed8; /* Darker blue on hover */
+  background-color: #224a82; /* Darker slate blue on hover */
 }
 
 button:active {
@@ -167,6 +198,10 @@ button:active {
   color: #00d2ff;
 }
 
+#pin-btn.pinned {
+  color: #00d2ff; /* Bright blue when the window is pinned */
+}
+
 #close-btn:hover {
   background-color: #ff4d4d;
   color: white;
@@ -189,11 +224,6 @@ button:active {
 
 #download-btn {
   width: 100%;
-}
-
-button:disabled {
-  background-color: #444;
-  cursor: not-allowed;
 }
 
 /* The new Progress Bar UI */

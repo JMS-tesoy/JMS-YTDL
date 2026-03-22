@@ -1,7 +1,7 @@
 const { invoke, Channel } = window.__TAURI__.core;
-const { open } = window.__TAURI__.dialog; // The folder picker logic
-const { downloadDir } = window.__TAURI__.path; // API to get the system's default Downloads folder
-const { getCurrentWindow } = window.__TAURI__.window; // API to control the window
+const { open } = window.__TAURI__.dialog;
+const { downloadDir } = window.__TAURI__.path;
+const { getCurrentWindow } = window.__TAURI__.window;
 
 let selectedPath = "";
 
@@ -35,6 +35,7 @@ async function selectFolder() {
 
 async function startDownload() {
   const url = document.querySelector("#url-input").value;
+  const quality = document.querySelector("#quality-select").value;
   const statusMsg = document.querySelector("#status-msg");
   const progressBar = document.querySelector("#progress-bar");
   const progressText = document.querySelector("#progress-text");
@@ -50,10 +51,8 @@ async function startDownload() {
   progressText.style.display = "block";
   openFolderBtn.style.display = "none";
 
-  // We create a listener channel to receive real-time terminal output from yt-dlp
   const onProgress = new Channel();
   onProgress.onmessage = (msg) => {
-    // Extract the percentage using a regex (e.g., "[download]  15.3% of...")
     const match = msg.match(/\[download\]\s+([\d\.]+)%/);
     if (match) {
       const percent = parseFloat(match[1]);
@@ -63,8 +62,7 @@ async function startDownload() {
   };
   
   try {
-    // We send BOTH the url and the downloadPath to the Rust side
-    await invoke("download_video", { url, downloadPath: selectedPath, onProgress });
+    await invoke("download_video", { url, downloadPath: selectedPath, quality, onProgress });
     statusMsg.textContent = "✅ Download Complete! Open folder ➔";
     statusMsg.style.color = "#00d2ff";
     progressBar.style.width = "100%"; // Fill bar on success
@@ -83,6 +81,7 @@ document.querySelector("#download-btn").onclick = startDownload;
 
 document.querySelector("#reset-btn").onclick = () => {
   document.querySelector("#url-input").value = "";
+  document.querySelector("#quality-select").value = "best";
   const statusMsg = document.querySelector("#status-msg");
   statusMsg.textContent = "Waiting for input...";
   statusMsg.style.color = "#f6f6f6";
@@ -113,6 +112,17 @@ document.querySelector("#close-btn").onclick = async () => {
   await getCurrentWindow().close();
 };
 
+document.querySelector("#minimize-btn").onclick = async () => {
+  await getCurrentWindow().minimize();
+};
+
+let isPinned = false;
+document.querySelector("#pin-btn").onclick = async () => {
+  isPinned = !isPinned;
+  await getCurrentWindow().setAlwaysOnTop(isPinned);
+  document.querySelector("#pin-btn").classList.toggle("pinned", isPinned);
+};
+
 // Explicitly tell the window to drag when the drag region is clicked
 document.querySelector(".header-bar").addEventListener("mousedown", async (e) => {
   // Only drag if left-clicking (buttons === 1) on a designated drag area (not the close buttons)
@@ -131,3 +141,8 @@ window.addEventListener("click", (e) => {
     openNewInstance();
   }
 }, { capture: true }); // Capture phase ensures we intercept the click before buttons process it
+
+// Reveal the window only after the HTML and CSS have completely loaded
+window.addEventListener("DOMContentLoaded", async () => {
+  await getCurrentWindow().show();
+});

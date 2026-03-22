@@ -7,7 +7,8 @@ async fn download_video(
     app: tauri::AppHandle, 
     url: String, 
     download_path: String,
-    on_progress: Channel<String> // <--- Added channel to emit events back to frontend
+    quality: String,
+    on_progress: Channel<String>
 ) -> Result<String, String> {
     let shell = app.shell();
 
@@ -15,10 +16,37 @@ async fn download_video(
         .sidecar("yt-dlp")
         .map_err(|e| format!("Could not find sidecar: {}", e))?;
 
-    // We use .spawn() instead of .output() so we can read data as it arrives
-    // Adding "--newline" and "--no-colors" makes the terminal text much easier to parse!
+    let mut args = vec![
+        "--newline".to_string(),
+        "--no-colors".to_string(),
+        "-P".to_string(),
+        download_path.clone(),
+    ];
+
+    match quality.as_str() {
+        "1080p" => {
+            args.push("-f".to_string());
+            args.push("bestvideo[height<=1080]+bestaudio/best[height<=1080]/best".to_string());
+        }
+        "720p" => {
+            args.push("-f".to_string());
+            args.push("bestvideo[height<=720]+bestaudio/best[height<=720]/best".to_string());
+        }
+        "audio" => {
+            args.push("-x".to_string());
+            args.push("--audio-format".to_string());
+            args.push("mp3".to_string());
+        }
+        _ => { // "best"
+            args.push("-f".to_string());
+            args.push("bestvideo+bestaudio/best".to_string());
+        }
+    }
+
+    args.push(url);
+
     let (mut rx, _child) = sidecar_command
-        .args(["--newline", "--no-colors", "-P", &download_path, &url])
+        .args(args)
         .spawn()
         .map_err(|e| format!("Failed to run downloader: {}", e))?;
 
@@ -78,7 +106,6 @@ fn open_new_instance() -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        // Both plugins initialized here
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![download_video, open_folder, open_new_instance])
