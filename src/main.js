@@ -128,9 +128,9 @@ document.querySelector("#update-btn").onclick = async () => {
 
   try {
     const result = await invoke("update_engine");
-    alert("Update process finished:\n\n" + result);
+    showToast(true);
   } catch (err) {
-    alert("Failed to update:\n\n" + err);
+    showToast(false);
   } finally {
     btn.innerHTML = originalText;
     btn.disabled = false;
@@ -175,3 +175,16 @@ window.addEventListener("click", (e) => {
 window.addEventListener("DOMContentLoaded", async () => {
   await getCurrentWindow().show();
 });
+
+function showToast(isSuccess) {
+  const toast = document.getElementById("toast-notification");
+  toast.className = ""; // Reset all classes
+  void toast.offsetWidth; // Force a DOM reflow to cleanly restart the animation
+  
+  toast.textContent = isSuccess ? "Engine Updated" : "Update Failed";
+  toast.classList.add("show", isSuccess ? "success" : "error");
+  
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3500); // Hide after 3.5 seconds
+}

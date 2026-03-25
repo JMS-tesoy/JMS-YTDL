@@ -292,3 +292,49 @@ button:active {
     padding: 0.7em 1em;
   }
 }
+
+/* Modern Minimalist Notification Pop-up */
+#toast-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #222;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.8em;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  border: 2px solid transparent;
+}
+
+#toast-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#toast-notification.success {
+  animation: updateSuccessAnim 1.5s forwards ease-in-out;
+}
+
+#toast-notification.error {
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+  box-shadow: 0 0 12px rgba(255, 77, 77, 0.3);
+}
+
+@keyframes updateSuccessAnim {
+  0% {
+    border-color: #ffab00; /* Warning Yellow */
+    color: #ffab00;
+    box-shadow: 0 0 10px rgba(255, 171, 0, 0.4);
+  }
+  100% {
+    border-color: #00e676; /* Vibrant Success Green */
+    color: #00e676;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+  }
+}
