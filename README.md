@@ -1,12 +1,12 @@
-# 📥 JMS YouTube Downloader
+# 📥 JMS Universal Video Downloader
 
-A fast, lightweight, and modern desktop application for downloading YouTube videos. Built with **Tauri 2.0**, **Rust**, and **Vanilla JavaScript** for maximum performance and a tiny footprint.
+A fast, lightweight, and modern desktop application for downloading videos from YouTube, Facebook, TikTok, and more. Built with **Tauri 2.0**, **Rust**, and **Vanilla JavaScript** for maximum performance and a tiny footprint.
 
 ![JMS Downloader Screenshot](image_3fb6e3.png)
 
 ## ✨ Features
 - **Modern UI**: Clean, dark-themed interface with zero-clutter.
-- **Sidecar Power**: Uses `yt-dlp` under the hood for reliable, high-speed downloads.
+- **Universal Support**: Uses `yt-dlp` under the hood, allowing downloads from over 1,000 sites including YouTube, Facebook, Instagram, and Twitter/X.
 - **Custom Location**: Select your preferred download folder via native Windows dialogs.
 - **Asynchronous**: Downloads run in the background without freezing the UI.
 - **Ultra Lightweight**: Built with Rust, keeping resource usage to a minimum.
@@ -39,7 +39,7 @@ A fast, lightweight, and modern desktop application for downloading YouTube vide
                 npm run tauri add dialog
 
 Run the application in development mode:
-                npm run dev
+                npm run tauri dev
 
 Building for Production
 To bundle the application into a standalone .exe:

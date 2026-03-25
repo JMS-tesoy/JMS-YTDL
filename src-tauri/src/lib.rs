@@ -8,6 +8,7 @@ async fn download_video(
     url: String, 
     download_path: String,
     quality: String,
+    cookies: String,
     on_progress: Channel<String>
 ) -> Result<String, String> {
     let shell = app.shell();
@@ -19,9 +20,17 @@ async fn download_video(
     let mut args = vec![
         "--newline".to_string(),
         "--no-colors".to_string(),
+        "--restrict-filenames".to_string(),
         "-P".to_string(),
         download_path.clone(),
+        "-o".to_string(),
+        "%(title).50s.%(ext)s".to_string(),
     ];
+
+    if cookies != "none" {
+        args.push("--cookies-from-browser".to_string());
+        args.push(cookies);
+    }
 
     match quality.as_str() {
         "1080p" => {
@@ -79,6 +88,26 @@ async fn download_video(
 }
 
 #[tauri::command]
+async fn update_engine(app: tauri::AppHandle) -> Result<String, String> {
+    let shell = app.shell();
+    let sidecar_command = shell
+        .sidecar("yt-dlp")
+        .map_err(|e| format!("Could not find sidecar: {}", e))?;
+
+    let output = sidecar_command
+        .arg("-U")
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute update: {}", e))?;
+
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    } else {
+        Err(String::from_utf8_lossy(&output.stderr).into_owned())
+    }
+}
+
+#[tauri::command]
 fn open_folder(path: String) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     let command = "explorer";
@@ -108,7 +137,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![download_video, open_folder, open_new_instance])
+        .invoke_handler(tauri::generate_handler![download_video, open_folder, open_new_instance, update_engine])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

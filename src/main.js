@@ -36,6 +36,7 @@ async function selectFolder() {
 async function startDownload() {
   const url = document.querySelector("#url-input").value;
   const quality = document.querySelector("#quality-select").value;
+  const cookies = document.querySelector("#cookie-select").value;
   const statusMsg = document.querySelector("#status-msg");
   const progressBar = document.querySelector("#progress-bar");
   const progressText = document.querySelector("#progress-text");
@@ -62,7 +63,7 @@ async function startDownload() {
   };
   
   try {
-    await invoke("download_video", { url, downloadPath: selectedPath, quality, onProgress });
+    await invoke("download_video", { url, downloadPath: selectedPath, quality, cookies, onProgress });
     statusMsg.textContent = "✅ Download Complete! Open folder ➔";
     statusMsg.style.color = "#00d2ff";
     progressBar.style.width = "100%"; // Fill bar on success
@@ -82,12 +83,14 @@ document.querySelector("#download-btn").onclick = startDownload;
 document.querySelector("#reset-btn").onclick = () => {
   document.querySelector("#url-input").value = "";
   document.querySelector("#quality-select").value = "best";
+  document.querySelector("#cookie-select").value = "none";
   const statusMsg = document.querySelector("#status-msg");
   statusMsg.textContent = "Waiting for input...";
   statusMsg.style.color = "#f6f6f6";
   document.querySelector("#progress-bar").style.width = "0%";
   document.querySelector("#progress-text").style.display = "none";
   document.querySelector("#open-folder-btn").style.display = "none";
+  document.querySelector("#cookie-warning").style.display = "none";
 };
 
 document.querySelector("#open-folder-btn").onclick = async () => {
@@ -106,7 +109,33 @@ async function openNewInstance() {
   }
 }
 
+document.querySelector("#cookie-select").addEventListener("change", (e) => {
+  const warning = document.querySelector("#cookie-warning");
+  if (e.target.value === "chrome" || e.target.value === "edge") {
+    warning.style.display = "block";
+  } else {
+    warning.style.display = "none";
+  }
+});
+
 document.querySelector("#new-instance-btn").onclick = openNewInstance;
+
+document.querySelector("#update-btn").onclick = async () => {
+  const btn = document.querySelector("#update-btn");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳ Updating Engine...";
+  btn.disabled = true;
+
+  try {
+    const result = await invoke("update_engine");
+    alert("Update process finished:\n\n" + result);
+  } catch (err) {
+    alert("Failed to update:\n\n" + err);
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+};
 
 document.querySelector("#close-btn").onclick = async () => {
   await getCurrentWindow().close();
