@@ -188,3 +188,256 @@ function showToast(isSuccess) {
     toast.classList.remove("show");
   }, 3500); // Hide after 3.5 seconds
 }
+
+// ═══════════════════════════════════════════
+//  TRANSCRIPTION LOGIC
+// ═══════════════════════════════════════════
+
+let selectedMediaPath = "";
+let isTranscribing = false;
+
+// ── Reset transcription fields ──
+document.querySelector("#transcribe-reset-btn").addEventListener("click", () => {
+  selectedMediaPath = "";
+  document.querySelector("#media-path-display").value = "";
+  document.querySelector("#language-select").value = "auto";
+  document.querySelector("#transcribe-status").textContent = "";
+  document.querySelector("#transcribe-progress-bar").style.width = "0%";
+  document.querySelector("#transcript-output").value = "";
+  document.querySelector("#transcript-output-container").style.display = "none";
+});
+
+// ── Toggle section visibility ──
+document.querySelector("#toggle-transcribe").addEventListener("click", async () => {
+  const section = document.querySelector("#transcribe-section");
+  const chevron = document.querySelector("#toggle-chevron");
+  const isExpanded = section.classList.contains("expanded");
+  const currentWindow = getCurrentWindow();
+
+  if (!isExpanded) {
+    section.classList.add("expanded");
+    chevron.style.transform = "rotate(180deg)";
+    checkModelStatus();
+    // Grow the window to fit the expanded panel
+    try {
+      const currentSize = await currentWindow.innerSize();
+      const newHeight = Math.max(currentSize.height, 900);
+      await currentWindow.setSize({ width: currentSize.width, height: newHeight });
+    } catch (_) {
+      // setSize might fail if user is resizing, that's fine
+    }
+  } else {
+    section.classList.remove("expanded");
+    chevron.style.transform = "rotate(0deg)";
+    // Shrink the window back to default
+    try {
+      const currentSize = await currentWindow.innerSize();
+      if (currentSize.height > 750) {
+        await currentWindow.setSize({ width: currentSize.width, height: 700 });
+      }
+    } catch (_) {}
+  }
+});
+
+// ── Get selected model size ──
+function getModelSize() {
+  return document.querySelector("#model-size-select").value;
+}
+
+// ── Check if whisper model exists ──
+async function checkModelStatus() {
+  const statusEl = document.querySelector("#model-status-text");
+  const downloadBtn = document.querySelector("#download-model-btn");
+  const statusBadge = document.querySelector("#model-status");
+  const modelSize = getModelSize();
+  const sizeLabels = { base: "142 MB", small: "466 MB", medium: "1.5 GB" };
+  try {
+    await invoke("check_whisper_model", { modelSize });
+    statusEl.textContent = `✅ ${modelSize} Model Ready`;
+    statusBadge.className = "model-status-badge ready";
+    downloadBtn.style.display = "none";
+  } catch (e) {
+    statusEl.textContent = `❌ ${modelSize} Model Not Found`;
+    statusBadge.className = "model-status-badge missing";
+    downloadBtn.style.display = "inline-block";
+  }
+}
+
+// ── Model size change → re-check status ──
+document.querySelector("#model-size-select").addEventListener("change", () => {
+  checkModelStatus();
+});
+
+// ── Download whisper model ──
+document.querySelector("#download-model-btn").addEventListener("click", async () => {
+  const downloadBtn = document.querySelector("#download-model-btn");
+  const statusEl = document.querySelector("#model-status-text");
+  const statusBadge = document.querySelector("#model-status");
+  const progressBar = document.querySelector("#transcribe-progress-bar");
+  const statusMsg = document.querySelector("#transcribe-status");
+  const modelSize = getModelSize();
+  const sizeLabels = { base: "142 MB", small: "466 MB", medium: "1.5 GB" };
+
+  downloadBtn.disabled = true;
+  downloadBtn.textContent = "⏳ Downloading...";
+  statusBadge.className = "model-status-badge downloading";
+  progressBar.style.width = "0%";
+
+  const onProgress = new Channel();
+  onProgress.onmessage = (msg) => {
+    const match = msg.match(/Downloading model...\s+(\d+)%/);
+    if (match) {
+      const pct = parseInt(match[1]);
+      progressBar.style.width = `${pct}%`;
+      statusEl.textContent = `⬇ Downloading ${modelSize} model... ${pct}%`;
+      statusMsg.textContent = `Model is ~${sizeLabels[modelSize] || "?"}. Please wait...`;
+    } else if (msg === "Download complete!") {
+      progressBar.style.width = "100%";
+      statusEl.textContent = `✅ ${modelSize} Model Ready`;
+      statusBadge.className = "model-status-badge ready";
+      statusMsg.textContent = "";
+      downloadBtn.style.display = "none";
+    }
+  };
+
+  try {
+    await invoke("download_whisper_model", { modelSize, onProgress });
+    progressBar.style.width = "100%";
+    statusEl.textContent = `✅ ${modelSize} Model Ready`;
+    statusBadge.className = "model-status-badge ready";
+    statusMsg.textContent = "";
+    downloadBtn.style.display = "none";
+  } catch (err) {
+    statusEl.textContent = "❌ Download Failed";
+    statusBadge.className = "model-status-badge missing";
+    statusMsg.textContent = "Error: " + err;
+    progressBar.style.width = "0%";
+    downloadBtn.textContent = "⬇ Download Model";
+    downloadBtn.disabled = false;
+  }
+});
+
+// ── Select media file (audio or video) ──
+document.querySelector("#media-file-btn").addEventListener("click", async () => {
+  const result = await open({
+    multiple: false,
+    title: "Select Audio or Video File",
+    filters: [
+      { name: "Audio & Video Files", extensions: ["mp3", "wav", "m4a", "flac", "ogg", "opus", "aac", "wma", "aiff", "webm", "mp4", "mkv", "avi", "mov", "wmv", "flv", "m4v", "3gp"] }
+    ]
+  });
+  if (result) {
+    selectedMediaPath = result;
+    document.querySelector("#media-path-display").value = selectedMediaPath;
+  }
+});
+
+// ── Start transcription ──
+document.querySelector("#transcribe-btn").addEventListener("click", async () => {
+  if (isTranscribing) return;
+  if (!selectedMediaPath) return alert("Please select an audio or video file first!");
+
+  const language = document.querySelector("#language-select").value;
+  const statusMsg = document.querySelector("#transcribe-status");
+  const progressBar = document.querySelector("#transcribe-progress-bar");
+  const outputContainer = document.querySelector("#transcript-output-container");
+  const outputArea = document.querySelector("#transcript-output");
+  const transcribeBtn = document.querySelector("#transcribe-btn");
+
+  isTranscribing = true;
+  transcribeBtn.style.opacity = "0.5";
+  statusMsg.textContent = "Starting transcription...";
+  statusMsg.style.color = "#f6f6f6";
+  progressBar.style.width = "0%";
+  outputContainer.style.display = "none";
+  outputArea.value = "";
+
+  const onProgress = new Channel();
+  onProgress.onmessage = (msg) => {
+    if (msg === "Converting audio to 16kHz WAV...") {
+      statusMsg.textContent = "🔧 Converting audio...";
+      progressBar.style.width = "10%";
+    } else if (msg === "Running transcription with whisper...") {
+      statusMsg.textContent = "🎙️ Transcribing...";
+      progressBar.style.width = "30%";
+    } else if (msg.trim()) {
+      // Skip whisper debug/progress lines (typically start with whisper_ or contain timing info)
+      const trimmed = msg.trim();
+      const isDebugLine =
+        trimmed.startsWith("whisper_") ||
+        trimmed.startsWith("system_info") ||
+        /^\s*\[\d{2}:\d{2}:\d{2}\.\d{3}/.test(trimmed) ||
+        /^\s*-->\s*\[\d{2}:\d{2}/.test(trimmed) ||
+        trimmed.startsWith("main:") ||
+        trimmed.startsWith("whisper_init") ||
+        trimmed.includes("processing") ||
+        trimmed.includes("sampling");
+      if (!isDebugLine) {
+        // Actual transcript text
+        outputArea.value += msg;
+        outputContainer.style.display = "block";
+        outputArea.scrollTop = outputArea.scrollHeight;
+      }
+    }
+  };
+
+  try {
+    const result = await invoke("transcribe_audio", {
+      audioPath: selectedMediaPath,
+      language,
+      modelSize: getModelSize(),
+      onProgress
+    });
+    outputArea.value = result;
+    outputContainer.style.display = "block";
+    progressBar.style.width = "100%";
+    statusMsg.textContent = "✅ Transcription Complete!";
+    statusMsg.style.color = "#00d2ff";
+  } catch (err) {
+    statusMsg.textContent = "❌ " + err;
+    statusMsg.style.color = "#ff4d4d";
+    progressBar.style.width = "0%";
+  } finally {
+    isTranscribing = false;
+    transcribeBtn.style.opacity = "1";
+  }
+});
+
+// ── Copy transcript to clipboard ──
+document.querySelector("#copy-transcript-btn").addEventListener("click", async () => {
+  const text = document.querySelector("#transcript-output").value;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.querySelector("#copy-transcript-btn");
+    const original = btn.innerHTML;
+    btn.innerHTML = "✅ Copied!";
+    setTimeout(() => { btn.innerHTML = original; }, 1500);
+  } catch (err) {
+    alert("Failed to copy: " + err);
+  }
+});
+
+// ── Save transcript as .txt ──
+document.querySelector("#save-transcript-btn").addEventListener("click", async () => {
+  const text = document.querySelector("#transcript-output").value;
+  if (!text) return alert("Nothing to save!");
+
+  const { save } = window.__TAURI__.dialog;
+  const filePath = await save({
+    defaultPath: "transcript.txt",
+    title: "Save Transcript",
+    filters: [{ name: "Text Files", extensions: ["txt"] }]
+  });
+  if (filePath) {
+    try {
+      await invoke("save_text_file", { path: filePath, content: text });
+      const btn = document.querySelector("#save-transcript-btn");
+      const original = btn.innerHTML;
+      btn.innerHTML = "✅ Saved!";
+      setTimeout(() => { btn.innerHTML = original; }, 1500);
+    } catch (err) {
+      alert("Failed to save: " + err);
+    }
+  }
+});
